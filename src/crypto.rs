@@ -18,13 +18,13 @@ pub fn encrypt_file(
         .create(true)
         .open(dest)?;
 
-    let original_slice = &(unsafe { Mmap::map(&original)? }[..]);
+    let original_map = unsafe { Mmap::map(&original)? };
 
-    encrypted.set_len(get_encrypted_size(original_slice) as u64)?;
+    encrypted.set_len(get_encrypted_size(&original_map[..]) as u64)?;
 
-    let encrypted_slice = &mut (unsafe { MmapMut::map_mut(&encrypted)? }[..]);
+    let mut encrypted_map = unsafe { MmapMut::map_mut(&encrypted)? };
 
-    encrypt(original_slice, encrypted_slice, pass.as_bytes())?;
+    encrypt(&original_map[..], &mut encrypted_map[..], pass.as_bytes())?;
 
     Ok(())
 }
@@ -41,17 +41,18 @@ pub fn decrypt_file(
         .create(true)
         .open(dest)?;
 
-    let original_slice = &(unsafe { Mmap::map(&original)? }[..]);
+    let original_map = unsafe { Mmap::map(&original)? };
 
     // The decrypted file can't be larger than the encrypted one,
     // so truncate the file based on that
-    decrypted.set_len(original_slice.len() as u64)?;
+    decrypted.set_len(original_map.len() as u64)?;
 
-    let mut decrypted_slice = unsafe { MmapMut::map_mut(&decrypted)? };
-    let size = decrypt(original_slice, &mut decrypted_slice[..], pass.as_bytes())?;
+    let mut decrypted_map = unsafe { MmapMut::map_mut(&decrypted)? };
+
+    let size = decrypt(&original_map[..], &mut decrypted_map[..], pass.as_bytes())?;
 
     // The mapped section must be closed before truncating the file
-    drop(decrypted_slice);
+    drop(decrypted_map);
 
     // Re-truncate the file based on the original data size
     decrypted.set_len(size as u64)?;

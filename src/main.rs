@@ -100,7 +100,8 @@ fn hide(
 
     {
         let payload_file = File::open(&payload_path)?;
-        let mut payload_file_slice = &(unsafe { Mmap::map(&payload_file)? }[..]);
+        let payload_file_map = unsafe { Mmap::map(&payload_file)? };
+        let mut payload_file_slice = &payload_file_map[..];
 
         let part_size = payload_file_slice.len() / cover_files.len();
         let part_leftover = payload_file_slice.len() % cover_files.len();

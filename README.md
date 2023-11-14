@@ -28,7 +28,7 @@ shinobu hide --password mypassword file1.txt file2.png ... -- target1.exe target
 
 ## Unhide files
 
-The hidden files will be extracted into `output_dir`.
+The hidden files will be extracted to `output_dir`.
 
 ```sh
 shinobu unhide target1.exe target2.exe ... -o output_dir

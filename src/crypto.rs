@@ -1,14 +1,22 @@
 use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use argon2::{Algorithm, Argon2, Params, Version};
+use memmap2::{Mmap, MmapMut};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
-use std::io::{Error, ErrorKind};
 use std::fs::File;
-use memmap2::{Mmap, MmapMut};
+use std::io::{Error, ErrorKind};
 
-pub fn encrypt_file(src: &String, dest: &String, pass: &String) -> Result<(), Box<dyn std::error::Error>> {
-    let original = File::open(&src)?;
-    let encrypted = File::options().read(true).write(true).create(true).open(&dest)?;
+pub fn encrypt_file(
+    src: &String,
+    dest: &String,
+    pass: &String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let original = File::open(src)?;
+    let encrypted = File::options()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(dest)?;
 
     let original_slice = &(unsafe { Mmap::map(&original)? }[..]);
 
@@ -21,9 +29,17 @@ pub fn encrypt_file(src: &String, dest: &String, pass: &String) -> Result<(), Bo
     Ok(())
 }
 
-pub fn decrypt_file(src: &String, dest: &String, pass: &String) -> Result<(), Box<dyn std::error::Error>> {
-    let original = File::open(&src)?;
-    let decrypted = File::options().read(true).write(true).create(true).open(&dest)?;
+pub fn decrypt_file(
+    src: &String,
+    dest: &String,
+    pass: &String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let original = File::open(src)?;
+    let decrypted = File::options()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(dest)?;
 
     let original_slice = &(unsafe { Mmap::map(&original)? }[..]);
 
@@ -57,15 +73,15 @@ fn encrypt(src: &[u8], dest: &mut [u8], pass: &[u8]) -> Result<(), Box<dyn std::
 
     let mut key = [0u8; 32];
 
-    derive_key(&pass, &salt, &mut key).unwrap();
+    derive_key(pass, &salt, &mut key).unwrap();
 
     let result = cbc::Encryptor::<aes::Aes256>::new(&key.into(), &iv.into())
         .encrypt_padded_b2b_mut::<Pkcs7>(src, &mut dest[salt.len() + iv.len()..]);
 
-    if let Err(_) = result {
+    if result.is_err() {
         return Err(Box::new(Error::new(
             ErrorKind::Other,
-            format!("Failed to encrypt data with the provided password"),
+            "Failed to encrypt data with the provided password",
         )));
     }
 
@@ -78,7 +94,7 @@ fn decrypt(src: &[u8], dest: &mut [u8], pass: &[u8]) -> Result<usize, Box<dyn st
 
     let mut key = [0u8; 32];
 
-    derive_key(&pass, &salt, &mut key).unwrap();
+    derive_key(pass, salt, &mut key).unwrap();
 
     let result = cbc::Decryptor::<aes::Aes256>::new(&key.into(), iv.into())
         .decrypt_padded_b2b_mut::<Pkcs7>(src, dest);
@@ -86,9 +102,9 @@ fn decrypt(src: &[u8], dest: &mut [u8], pass: &[u8]) -> Result<usize, Box<dyn st
     match result {
         Err(_) => Err(Box::new(Error::new(
             ErrorKind::Other,
-            format!("The password is invalid, or the data is corrupted"),
+            "The password is invalid, or the data is corrupted",
         ))),
-        Ok(slice) => Ok(slice.len())
+        Ok(slice) => Ok(slice.len()),
     }
 }
 
@@ -98,7 +114,7 @@ fn get_encrypted_size(src: &[u8]) -> usize {
     // - size + 16 otherwise (due to an extra block of padding)
     let salt_and_iv_size = 32;
 
-    return src.len() + (16 - src.len() % 16) + salt_and_iv_size;
+    src.len() + (16 - src.len() % 16) + salt_and_iv_size
 }
 
 fn derive_key(pass: &[u8], salt: &[u8], out: &mut [u8]) -> Result<(), argon2::Error> {

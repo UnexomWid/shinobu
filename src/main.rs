@@ -92,7 +92,7 @@ fn hide(
 
         let encrypted_path = format!("{}.enc.tmp", utils::get_temp_filename()?);
 
-        crypto::encrypt_file(&payload_path, &encrypted_path, &pass)?;
+        crypto::encrypt_file(&payload_path, &encrypted_path, pass)?;
 
         remove_file(&payload_path)?;
         payload_path = encrypted_path;
@@ -128,7 +128,7 @@ fn hide(
 
             // TODO: check if the file is actually a MZPE,
             // and use the appropriate cover type
-            MZPECover::from(cover).cover(&payload, &meta)?;
+            MZPECover::from(cover).cover(payload, &meta)?;
 
             payload_file_slice = remaining;
         }
@@ -156,11 +156,11 @@ fn unhide(
 
     // Validate cover files
     for path in files.iter() {
-        let file = File::open(&path)?;
+        let file = File::open(path)?;
 
         let mut cover = MZPEUncover::from(file);
 
-        if let Err(_) = cover.parse() {
+        if cover.parse().is_err() {
             return err(
                 &format!(
                     "Failed to read metadata from {}\nThis file most likely doesn't have a payload hidden in it",
@@ -177,17 +177,13 @@ fn unhide(
 
     if utils::count_unique(&covers, |cover| cover.1.meta().unwrap().total_parts()) > 1 {
         return err(
-            &format!(
-                "The cover files don't match (total_parts is not the same for all files)\nThese files most likely don't hide anything together"
-            ),
+            "The cover files don't match (total_parts is not the same for all files)\nThese files most likely don't hide anything together"
         );
     }
 
     if utils::count_unique(&covers, |cover| cover.1.meta().unwrap().encrypted()) > 1 {
         return err(
-            &format!(
-                "The cover files don't match (some files store encrypted data, others store normal data)\nThese files most likely don't hide anything together"
-            ),
+            "The cover files don't match (some files store encrypted data, others store normal data)\nThese files most likely don't hide anything together"
         );
     }
 
@@ -229,9 +225,7 @@ fn unhide(
     for i in 1..covers.len() {
         if covers[i - 1].1.meta().unwrap().part() != i as u16 {
             return err(
-                &format!(
-                    "The cover files that you passed contain duplicated parts\nYou most likely passed the same file twice\nIf not, then these files hide entirely different payloads"
-                ),
+                "The cover files that you passed contain duplicated parts\nYou most likely passed the same file twice\nIf not, then these files hide entirely different payloads"
             );
         }
     }
@@ -261,16 +255,14 @@ fn unhide(
             Some(pass) => {
                 let decrypted_path = format!("{}.dec.tmp", utils::get_temp_filename()?);
 
-                crypto::decrypt_file(&payload_path, &decrypted_path, &pass)?;
+                crypto::decrypt_file(&payload_path, &decrypted_path, pass)?;
 
                 remove_file(&payload_path)?;
                 payload_path = decrypted_path;
-            },
+            }
             None => {
                 return err(
-                    &format!(
-                        "The payload hidden in these files is encrypted\nPlease provide the password via the --password flag"
-                    ),
+                    "The payload hidden in these files is encrypted\nPlease provide the password via the --password flag"
                 );
             }
         }

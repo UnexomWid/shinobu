@@ -28,7 +28,7 @@ impl<T: Read + Write + Seek> Cover for MZPECover<T> {
         copy(&mut Cursor::new(&src), &mut self.inner)?;
 
         let metadata: u64 = (*meta).into();
-        self.inner.write(&metadata.to_be_bytes())?;
+        self.inner.write_all(&metadata.to_be_bytes())?;
 
         Ok(())
     }
@@ -70,7 +70,7 @@ impl<T: Read + Seek> Uncover for MZPEUncover<T> {
             .seek(SeekFrom::End(-(size_of::<Metadata>() as i64)))?;
 
         let mut meta = [0u8; 8];
-        self.inner.read(&mut meta)?;
+        self.inner.read_exact(&mut meta)?;
 
         let meta = Metadata::from(u64::from_be_bytes(meta));
 

@@ -8,7 +8,7 @@ pub fn get_temp_filename() -> Result<String, SystemTimeError> {
     ))
 }
 
-pub fn count_unique<T, F, R>(vec: &Vec<T>, lambda: F) -> usize
+pub fn count_unique<T, F, R>(vec: &[T], lambda: F) -> usize
 where
     F: Fn(&T) -> R,
     R: std::cmp::Eq + std::hash::Hash,

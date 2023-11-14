@@ -96,6 +96,6 @@ of the file.
 
 # License <a href="https://github.com/UnexomWid/shinobu/blob/master/LICENSE"><img align="right" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
 
-**shinobu** was created by [UnexomWid](https://uw.exom.dev). It is licensed under the [MIT](https://github.com/UnexomWid/X10/blob/master/LICENSE) license.
+**shinobu** was created by [UnexomWid](https://uw.exom.dev). It is licensed under the [MIT](https://github.com/UnexomWid/shinobu/blob/master/LICENSE) license.
 
 I don't own the image shown at the beginning of this readme. That's just Shinobu.

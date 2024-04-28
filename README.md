@@ -2,7 +2,7 @@
   <img src="public/shinobu.png" width="450" height="253" alt="shinobu">
 </p>
 
-# About <a href="https://en.wikipedia.org/wiki/C%2B%2B17"><img align="right" src="https://img.shields.io/badge/Rust-1%2E17-f74c00?logo=Rust" alt="Rust 1.73" /></a>
+# About <a href="https://www.rust-lang.org/"><img align="right" src="https://img.shields.io/badge/Rust-1%2E73-f74c00?logo=Rust" alt="Rust 1.73" /></a>
 
 **shinobu** is a program that lets you hide files inside one or more MZPE executables (aka `.exe`, `.dll` and `.sys`).
 
